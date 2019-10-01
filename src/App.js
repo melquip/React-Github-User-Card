@@ -1,26 +1,39 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Card from './Card';
+import { axiosAuth, persistData, getData } from './helpers';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			username: 'melquip',
+			followers: getData('github_card_followers').followers || []
+		};
+	}
+
+	componentDidMount() {
+		if (this.state.followers.length === 0) {
+			axiosAuth().get('https://api.github.com/users/melquip/followers')
+				.then(response => {
+					const state = {
+						followers: response.data
+					}
+					this.setState(state);
+					persistData('github_card_followers', state);
+				})
+				.catch(error => console.error(error));
+		} else console.log(this.state.followers)
+	}
+
+	render() {
+		const { username, followers } = this.state;
+		return (
+			<div className="App">
+				<Card username={username} />
+				{
+					followers.map(follower => <Card username={follower.login} key={follower.id} />)
+				}
+			</div>
+		);
+	}
 }
-
-export default App;
