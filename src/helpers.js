@@ -6,7 +6,6 @@ export const axiosAuth = () => {
 		headers: {
 			'Authorization': `token ${env.REACT_APP_TOKEN}`
 		},
-		//data: `client_id=${env.REACT_APP_CLIENT_ID}&client_secret=${env.REACT_APP_CLIENT_SECRET}`
 	});
 }
 export const persistData = (key, state) => {

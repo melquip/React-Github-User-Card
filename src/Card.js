@@ -5,25 +5,34 @@ import GitHubCalendar from 'github-calendar';
 export default class Card extends React.Component {
 	constructor(props) {
 		super(props);
-		const data = getData(`github_card_card_${props.username}`);
+		const data = getData(`github_user_card_${props.login}`);
 		this.state = data ? data : { user: null };
+		this.calendar = false;
 	}
-	componentDidMount() {
-		const { username } = this.props;
-		console.log(username, !this.state.user)
-		if (username && !this.state.user) {
-			axiosAuth().get(`https://api.github.com/users/${username}`)
+	requestUser = () => {
+		const { login } = this.props;
+		if (login && !this.state.user) {
+			console.log(login, !this.state.user)
+			axiosAuth().get(`https://api.github.com/users/${login}`)
 				.then(response => {
 					const state = {
 						user: response.data
 					};
 					this.setState(state);
-					persistData(`github_card_card_${state.user.login}`, state)
+					persistData(`github_user_card_${state.user.login}`, state)
 				})
 				.catch(error => console.error(error));
+		} else console.info(login, !this.state.user);
+		if (this.state.user && !this.calendar) {
+			GitHubCalendar(`.card[data-id="${this.state.user.login}"] .calendar`, login, { responsive: true });
+			this.calendar = true;
 		}
-		console.log('calendar', `.card[data-id="${this.state.user.login}"] .calendar`);
-		GitHubCalendar(`.card[data-id="${this.state.user.login}"] .calendar`, username, { responsive: true });
+	}
+	componentDidMount() {
+		this.requestUser();
+	}
+	componentDidUpdate() {
+		this.requestUser();
 	}
 	toggleChart = (e) => {
 		e.target.parentElement.classList.toggle('showMore');
